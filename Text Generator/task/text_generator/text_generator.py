@@ -1,6 +1,6 @@
-# Write your code here
 import nltk
 from nltk.tokenize import WhitespaceTokenizer
+from collections import defaultdict, Counter
 
 def main():
     fileName = input("Enter the file name: ")
@@ -8,21 +8,27 @@ def main():
         text = inFile.read()
         tokens = WhitespaceTokenizer().tokenize(text)
         bigrams = list(nltk.bigrams(tokens))
-        print("Number of bigrams: ", len(bigrams))
-        getToken(bigrams)
 
-def getToken(bigrams):
+    model = {}
+    headTail = defaultdict(list)
+    for pair in bigrams:
+        headTail[pair[0]].append(pair[1])
+    for key, value in headTail.items():
+        model[key] = Counter(value)
+    getToken(model)
+
+def getToken(model):
     index = input()
     if index != "exit":
         try:
-            index = int(index)
-            print(f"Head: {bigrams[index][0]} \t\t Tail: {bigrams[index][1]}")
-        except ValueError:
-            print("Type Error. Please input an integer.")
-        except IndexError:
-            print("Index Error. Please input an integer that is in the range of corpus.")
+            print(f"Head: {index}")
+            for key, value in model[index].items():
+                print(f"Tail: {key} \t Count: {value}")
+            print()
+        except KeyError:
+            print("Key Error. The requested word is not in the model. Please input another word.\n")
         finally:
-            getToken(bigrams)
+            getToken(model)
 
 
 main()
