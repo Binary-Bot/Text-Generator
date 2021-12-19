@@ -1,9 +1,10 @@
 import nltk
+import random
 from nltk.tokenize import WhitespaceTokenizer
 from collections import defaultdict, Counter
 
 def main():
-    fileName = input("Enter the file name: ")
+    fileName = input()
     with open(fileName, encoding="utf-8") as inFile:
         text = inFile.read()
         tokens = WhitespaceTokenizer().tokenize(text)
@@ -15,21 +16,14 @@ def main():
         headTail[pair[0]].append(pair[1])
     for key, value in headTail.items():
         model[key] = Counter(value)
-    getToken(model)
+    generatePseudo(model)
 
-def getToken(model):
-    index = input()
-    if index != "exit":
-        try:
-            print(f"Head: {index}")
-            for key, value in model[index].items():
-                print(f"Tail: {key} \t Count: {value}")
-            print()
-        except KeyError:
-            print("Key Error. The requested word is not in the model. Please input another word.\n")
-        finally:
-            getToken(model)
-
+def generatePseudo(model):
+    currentWord = random.choice(list(model.keys()))
+    for i in range(10):
+        for j in range(10):
+            print(currentWord, end=" ")
+            currentWord = random.choices(population=list(model[currentWord].keys()), weights=list(model[currentWord].values()))[0]
+        print()
 
 main()
-
