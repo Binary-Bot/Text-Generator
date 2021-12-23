@@ -9,19 +9,19 @@ def main():
     with open(fileName, encoding="utf-8") as inFile:
         text = inFile.read()
         tokens = WhitespaceTokenizer().tokenize(text)
-        bigrams = list(nltk.bigrams(tokens))
+        trigrams = list(nltk.trigrams(tokens))
 
     model = {}
     headTail = defaultdict(list)
-    for pair in bigrams:
-        headTail[pair[0]].append(pair[1])
+    for pair in trigrams:
+        headTail[pair[0] + " " + pair[1]].append(pair[2])
     for key, value in headTail.items():
         model[key] = Counter(value)
     generatePseudo(model, text)
 
 def generatePseudo(model, text):
-    capitalLetters = re.findall("([A-Z]\w*)\s", text)
-    # punctuatedLetters = re.findall(f"\w*[.?!]", text)
+    r = re.compile("([A-Z]\w*)\s")
+    capitalLetters = list(filter(r.match, model.keys()))
     for i in range(10):
         currentWord = random.choice(capitalLetters)
         sentence = ""
@@ -30,18 +30,19 @@ def generatePseudo(model, text):
 
 def generateASentence(sentence, currentWord, capitalLetters, model):
     while True:
-        sentence += currentWord + " "
+        word = currentWord.split()
+        sentence += word[0] + " "
         if currentWord[-1] in ".?!":
-            if len(sentence.split()) > 4:
+            if len(sentence.split()) > 3:
                 break
             else:
                 try:
-                    currentWord = random.choice(list(set(capitalLetters).intersection(set(model[currentWord].keys()))))
+                    currentWord = word[1] + " " + random.choice(list(set(capitalLetters).intersection(set(model[currentWord].keys()))))
                 except IndexError:
-                    currentWord = random.choices(population=list(model[currentWord].keys()), weights=list(model[currentWord].values()))[0]
+                    currentWord = word[1] + " " + random.choices(population=list(model[currentWord].keys()), weights=list(model[currentWord].values()))[0]
                 finally:
                     continue
-        currentWord = random.choices(population=list(model[currentWord].keys()), weights=list(model[currentWord].values()))[0]
-
+        currentWord = word[1] + " " + random.choices(population=list(model[currentWord].keys()), weights=list(model[currentWord].values()))[0]
+    sentence += currentWord.split()[1]
     return sentence
 main()
